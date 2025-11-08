@@ -9,7 +9,6 @@
     <script src="https://cdn.jsdelivr.net/npm/moment@2.29.4/locale/pt-br.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* Mantenha todo o CSS anterior igual */
         :root {
             --primary: #4361ee;
             --secondary: #3f37c9;
@@ -354,6 +353,66 @@
             color: var(--text-light);
         }
 
+        .trend-analysis {
+            background-color: #f8f9fa;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .trend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            border-radius: 6px;
+            background-color: white;
+        }
+
+        .trend-indicator {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 0.8rem;
+        }
+
+        .trend-indicator.positive {
+            background-color: var(--positive);
+        }
+
+        .trend-indicator.negative {
+            background-color: var(--negative);
+        }
+
+        .trend-indicator.neutral {
+            background-color: var(--text-light);
+        }
+
+        .risk-analysis {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            border-radius: 8px;
+            padding: 15px;
+            margin-top: 15px;
+        }
+
+        .risk-item {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .risk-icon {
+            color: #856404;
+            margin-right: 10px;
+            margin-top: 2px;
+        }
+
         @media (max-width: 768px) {
             .dashboard {
                 grid-template-columns: 1fr;
@@ -380,8 +439,8 @@
             <h1><i class="fas fa-chart-line"></i> Dashboard de Análise de Volume</h1>
             <p class="description">
                 <span id="connection-status" class="status-indicator status-connected"></span>
-                Dashboard interativo - Dados em tempo real do Google Sheets
-                <div class="connection-info" id="connection-info">Conectando ao Google Sheets...</div>
+                Dashboard interativo - Funciona 100% offline
+                <div class="connection-info" id="connection-info">Pronto para análise</div>
             </p>
         </header>
         
@@ -411,15 +470,16 @@
             </div>
             <div class="file-input-container">
                 <button id="upload-btn" class="btn">
-                    <i class="fas fa-upload"></i> Carregar CSV
+                    <i class="fas fa-upload"></i> Faça o upload CSV Aqui
                 </button>
                 <input type="file" id="file-input" accept=".csv">
             </div>
-            <div class="file-input-container">
-                <a href="https://docs.google.com/spreadsheets/d/1iLftWtEUacg6iYCzZKhChR6b5nqrNQxTz6R3lulBCro/edit?gid=0#gid=0" class="btn" target="_blank">
-                    <i class="fas fa-external-link-alt"></i> Ver Planilha
+             <div class="file-input-container">
+                <a href="https://docs.google.com/spreadsheets/d/1iLftWtEUacg6iYCzZKhChR6b5nqrNQxTz6R3lulBCro/edit?gid=0#gid=0" id="upload-btn" class="btn" target="_blank">
+                    <i class="fas fa-download"></i> Faça download csv Aqui
                 </a>
             </div>
+
             <button id="export-btn" class="btn">
                 <i class="fas fa-download"></i> Exportar Relatório
             </button>
@@ -428,11 +488,6 @@
         <div id="error-message" class="error" style="display: none;">
             <i class="fas fa-exclamation-triangle"></i>
             <p id="error-text"></p>
-        </div>
-
-        <div id="loading-message" class="loading" style="display: none;">
-            <i class="fas fa-spinner fa-spin"></i>
-            <p>Carregando dados do Google Sheets...</p>
         </div>
         
         <div id="dashboard">
@@ -485,6 +540,15 @@
                 </div>
             </div>
 
+            <!-- NOVO CARD: GRÁFICO COMPARATIVO MENSAL -->
+            <div class="card">
+                <h2><i class="fas fa-chart-area"></i> Comparativo Mensal entre Anos</h2>
+                <div class="chart-container">
+                    <canvas id="monthly-comparison-chart"></canvas>
+                </div>
+            </div>
+            
+            <!-- NOVO CARD: Variação Diária de Volume -->
             <div class="card">
                 <h2><i class="fas fa-exchange-alt"></i> Variação Diária de Volume</h2>
                 <div class="chart-container">
@@ -492,9 +556,20 @@
                 </div>
             </div>
             
+            <!-- CARD ATUALIZADO: Insights e Tendências com Análise de Riscos -->
             <div class="card">
-                <h2><i class="fas fa-lightbulb"></i> Insights e Tendências</h2>
+                <h2><i class="fas fa-lightbulb"></i> Análise de Tendências e Riscos</h2>
                 <div id="trend-summary"></div>
+                
+                <div class="trend-analysis" id="trend-analysis">
+                    <h3><i class="fas fa-chart-line"></i> Análise de Tendências</h3>
+                    <div id="trend-items"></div>
+                </div>
+                
+                <div class="risk-analysis" id="risk-analysis">
+                    <h3><i class="fas fa-exclamation-triangle"></i> Análise de Riscos</h3>
+                    <div id="risk-items"></div>
+                </div>
                 
                 <div class="insight-card">
                     <h3><i class="fas fa-chart-line"></i> Recomendações Baseadas nos Dados</h3>
@@ -525,19 +600,13 @@
     </div>
     
     <footer>
-        <p>Dashboard de Análise de Volume. Desenvolvido por Eliane ERB &copy; 2025 - Dados em tempo real do Google Sheets</p>
+        <p>Dashboard de Análise de Volume. Desenvolvido por Eliane ERB. &copy; 2025 - Funciona 100% offline</p>
     </footer>
 
     <script>
-        // Configuração da Planilha Google
-        const SPREADSHEET_ID = '1iLftWtEUacg6iYCzZKhChR6b5nqrNQxTz6R3lulBCro/edit?gid=0#gid=0';
-        const SHEET_NAME = 'Analise de Expedidos';
-        const API_KEY = 'https://script.google.com/a/macros/mercadolivre.com/s/AKfycbzZt2Pr505j7GpqGZyEz5LjQgOA7VtZzRFD7OF8oVXDczQLTe3tpWM_V-IO2myDbiAk0Q/exec'; // Chave pública de API (pode precisar ser substituída)
-
         // Elementos da DOM
         const errorElement = document.getElementById('error-message');
         const errorTextElement = document.getElementById('error-text');
-        const loadingElement = document.getElementById('loading-message');
         const refreshButton = document.getElementById('refresh-btn');
         const exportButton = document.getElementById('export-btn');
         const uploadButton = document.getElementById('upload-btn');
@@ -555,10 +624,10 @@
         // Inicialização
         document.addEventListener('DOMContentLoaded', function() {
             moment.locale('pt-br');
-            loadDataFromGoogleSheets();
+            loadData();
             
             // Eventos
-            refreshButton.addEventListener('click', loadDataFromGoogleSheets);
+            refreshButton.addEventListener('click', loadData);
             exportButton.addEventListener('click', exportReport);
             uploadButton.addEventListener('click', () => fileInput.click());
             fileInput.addEventListener('change', handleFileUpload);
@@ -566,192 +635,134 @@
             yearFilter.addEventListener('change', applyFilters);
         });
         
-        async function loadDataFromGoogleSheets() {
-            showLoading();
+        async function loadData() {
             hideError();
-            updateConnectionStatus(false, 'Conectando ao Google Sheets...');
+            updateConnectionStatus(true, 'Carregando dados do Google Sheets...');
             
             try {
-                // URL da API do Google Sheets (formato público)
-                const url = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:csv&sheet=${SHEET_NAME}`;
+                // Primeiro tenta carregar do Google Sheets
+                const googleSheetsData = await loadDataFromGoogleSheets();
+                if (googleSheetsData && googleSheetsData.length > 0) {
+                    allData = googleSheetsData;
+                    updateConnectionStatus(true, 'Dados carregados do Google Sheets');
+                } else {
+                    // Fallback para dados de exemplo se não conseguir carregar do Google Sheets
+                    allData = generateRealisticSampleData();
+                    updateConnectionStatus(true, 'Dados de exemplo carregados (Google Sheets não disponível)');
+                }
                 
-                console.log('Buscando dados da URL:', url);
+                populateYearFilter();
+                applyFilters();
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                // Fallback para dados de exemplo
+                allData = generateRealisticSampleData();
+                populateYearFilter();
+                applyFilters();
+                updateConnectionStatus(true, 'Dados de exemplo carregados (erro no Google Sheets)');
+            }
+        }
+        
+        async function loadDataFromGoogleSheets() {
+            try {
+                // URL do Google Sheets (formato CSV)
+                const sheetId = '1iLftWtEUacg6iYCzZKhChR6b5nqrNQxTz6R3lulBCro';
+                const sheetUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:csv`;
                 
-                const response = await fetch(url);
-                
+                const response = await fetch(sheetUrl);
                 if (!response.ok) {
                     throw new Error(`Erro HTTP: ${response.status}`);
                 }
                 
                 const csvText = await response.text();
-                console.log('Dados CSV recebidos:', csvText.substring(0, 500));
-                
-                const processedData = processGoogleSheetsData(csvText);
-                
-                if (processedData && processedData.length > 0) {
-                    allData = processedData;
-                    populateYearFilter();
-                    applyFilters();
-                    updateConnectionStatus(true, `Dados carregados: ${allData.length} registros`);
-                } else {
-                    throw new Error('Nenhum dado válido encontrado na planilha');
-                }
-                
+                return processCSVData(csvText);
             } catch (error) {
-                console.error('Erro ao carregar dados do Google Sheets:', error);
-                showError('Erro ao carregar dados: ' + error.message + '. Carregando dados de exemplo...');
-                
-                // Fallback para dados de exemplo
-                setTimeout(() => {
-                    allData = generateRealisticSampleData();
-                    populateYearFilter();
-                    applyFilters();
-                    updateConnectionStatus(true, 'Dados de exemplo carregados');
-                }, 1000);
-            } finally {
-                hideLoading();
+                console.error('Erro ao carregar do Google Sheets:', error);
+                throw error;
             }
         }
         
-        function processGoogleSheetsData(csvText) {
+        function processCSVData(csvText) {
             const weekdays = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
             const processedData = [];
             
             const lines = csvText.split('\n').filter(line => line.trim() !== '');
             
-            if (lines.length <= 1) {
-                throw new Error('Planilha vazia ou sem dados');
-            }
-            
-            // Encontrar índices das colunas
-            const headers = parseCSVLine(lines[0]);
-            console.log('Cabeçalhos encontrados:', headers);
-            
-            const dateIndex = headers.findIndex(h => 
-                h.toLowerCase().includes('data') || h.toLowerCase().includes('date')
-            );
-            
-            const volumeIndex = headers.findIndex(h => 
-                h.toLowerCase().includes('qntd') || h.toLowerCase().includes('volume') || 
-                h.toLowerCase().includes('expedida') || h.toLowerCase().includes('quantidade') ||
-                h.toLowerCase().includes('total')
-            );
-            
-            console.log('Índices encontrados - Data:', dateIndex, 'Volume:', volumeIndex);
-            
-            if (dateIndex === -1 || volumeIndex === -1) {
-                throw new Error('Colunas "Data" e "Volume/QNTD Expedida" não encontradas. Cabeçalhos: ' + headers.join(', '));
-            }
-            
+            // Pular o cabeçalho e começar da linha 1 (índice 0 é o cabeçalho)
             for (let i = 1; i < lines.length; i++) {
                 const line = lines[i].trim();
                 if (!line) continue;
                 
-                try {
-                    const values = parseCSVLine(line);
-                    
-                    if (values.length <= Math.max(dateIndex, volumeIndex)) {
-                        continue;
-                    }
-                    
-                    // Processar data
-                    const dateStr = values[dateIndex].replace(/"/g, '').trim();
-                    let date = parseDate(dateStr);
-                    
-                    if (!date || isNaN(date.getTime())) {
-                        console.log('Data inválida ignorada:', dateStr);
-                        continue;
-                    }
-                    
-                    // Processar volume
-                    const volumeStr = values[volumeIndex].replace(/"/g, '').replace(',', '.').trim();
-                    const volume = parseFloat(volumeStr);
-                    
-                    if (isNaN(volume) || volume <= 0) {
-                        console.log('Volume inválido ignorado:', volumeStr);
-                        continue;
-                    }
-                    
-                    const month = date.getMonth() + 1;
-                    const year = date.getFullYear();
-                    const dayOfWeek = date.getDay();
-                    
-                    processedData.push({
-                        date: date,
-                        volume: volume,
-                        days: 1,
-                        weekday: weekdays[dayOfWeek],
-                        dayOfWeek: dayOfWeek,
-                        month: month,
-                        year: year,
-                        monthYear: `${month.toString().padStart(2, '0')}/${year}`
-                    });
-                    
-                } catch (e) {
-                    console.log('Erro ao processar linha:', line, e);
+                // Processar linha CSV considerando possíveis vírgulas dentro de valores
+                const values = parseCSVLine(line);
+                
+                // Colunas esperadas: Data, QNTD Expedida, Nº dias, Dias da Semana
+                const dateStr = values[0] ? values[0].replace(/"/g, '').trim() : '';
+                const volumeStr = values[1] ? values[1].replace(/"/g, '').trim() : '';
+                const weekdayStr = values[3] ? values[3].replace(/"/g, '').trim() : '';
+                
+                if (!dateStr || !volumeStr || volumeStr === '' || isNaN(parseFloat(volumeStr))) {
                     continue;
                 }
-            }
-            
-            console.log(`Processados ${processedData.length} registros válidos`);
-            return processedData;
-        }
-        
-        function parseDate(dateStr) {
-            if (!dateStr) return null;
-            
-            // Tentar diferentes formatos de data
-            const formats = [
-                /(\d{1,2})\/(\d{1,2})\/(\d{4})/, // DD/MM/YYYY
-                /(\d{4})-(\d{1,2})-(\d{1,2})/,   // YYYY-MM-DD
-                /(\d{1,2})-(\d{1,2})-(\d{4})/    // DD-MM-YYYY
-            ];
-            
-            for (const format of formats) {
-                const match = dateStr.match(format);
-                if (match) {
-                    if (format === formats[0]) { // DD/MM/YYYY
-                        return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
-                    } else if (format === formats[1]) { // YYYY-MM-DD
-                        return new Date(parseInt(match[1]), parseInt(match[2]) - 1, parseInt(match[3]));
-                    } else if (format === formats[2]) { // DD-MM-YYYY
-                        return new Date(parseInt(match[3]), parseInt(match[2]) - 1, parseInt(match[1]));
-                    }
-                }
-            }
-            
-            // Tentar parsing direto
-            const date = new Date(dateStr);
-            return isNaN(date.getTime()) ? null : date;
-        }
-        
-        function parseCSVLine(line) {
-            const result = [];
-            let current = '';
-            let inQuotes = false;
-            
-            for (let i = 0; i < line.length; i++) {
-                const char = line[i];
                 
-                if (char === '"') {
-                    inQuotes = !inQuotes;
-                } else if (char === ',' && !inQuotes) {
-                    result.push(current);
-                    current = '';
-                } else {
-                    current += char;
+                let date;
+                try {
+                    // Tentar diferentes formatos de data
+                    if (dateStr.includes('/')) {
+                        const parts = dateStr.split('/');
+                        if (parts.length === 3) {
+                            // Formato DD/MM/YYYY
+                            if (parts[2].length === 4) {
+                                date = new Date(parts[2], parts[1] - 1, parts[0]);
+                            } 
+                            // Formato MM/DD/YYYY
+                            else if (parts[0].length === 4) {
+                                date = new Date(parts[0], parts[1] - 1, parts[2]);
+                            }
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Data inválida:', dateStr, e);
+                    continue;
                 }
+                
+                if (!date || isNaN(date.getTime())) {
+                    console.warn('Data inválida após parsing:', dateStr);
+                    continue;
+                }
+                
+                const volume = parseFloat(volumeStr);
+                if (volume <= 0) continue;
+                
+                const month = date.getMonth() + 1;
+                const year = date.getFullYear();
+                const dayOfWeek = date.getDay();
+                
+                // Validar se o dia da semana corresponde
+                const expectedWeekday = weekdays[dayOfWeek];
+                const isValidWeekday = !weekdayStr || weekdayStr.includes(expectedWeekday.substring(0, 3));
+                
+                processedData.push({
+                    date: date,
+                    volume: volume,
+                    days: parseInt(values[2]) || 1,
+                    weekday: weekdays[dayOfWeek],
+                    dayOfWeek: dayOfWeek,
+                    month: month,
+                    year: year,
+                    monthYear: `${month.toString().padStart(2, '0')}/${year}`
+                });
             }
             
-            result.push(current);
-            return result;
+            console.log('Dados processados do Google Sheets:', processedData.length, 'registros');
+            return processedData;
         }
         
         function generateRealisticSampleData() {
             console.log('Gerando dados de exemplo realistas...');
             const data = [];
             const startDate = new Date('2023-01-01');
-            const endDate = new Date('2023-12-31');
+            const endDate = new Date('2024-12-31');
             const weekdays = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
             
             let currentDate = new Date(startDate);
@@ -763,12 +774,19 @@
             while (currentDate <= endDate) {
                 const dayOfWeek = currentDate.getDay();
                 const month = currentDate.getMonth();
+                const year = currentDate.getFullYear();
+                
+                let yearMultiplier = 1;
+                if (year === 2024) {
+                    yearMultiplier = 1.1;
+                }
                 
                 let baseVariation = (Math.random() - 0.3) * 80;
                 let volume = Math.max(200, previousVolume + baseVariation);
                 
                 volume *= seasonalPatterns[dayOfWeek];
                 volume *= monthlyPatterns[month];
+                volume *= yearMultiplier;
                 
                 previousVolume = volume;
                 
@@ -779,14 +797,14 @@
                     weekday: weekdays[dayOfWeek],
                     dayOfWeek: dayOfWeek,
                     month: month + 1,
-                    year: currentDate.getFullYear(),
-                    monthYear: `${(month + 1).toString().padStart(2, '0')}/${currentDate.getFullYear()}`
+                    year: year,
+                    monthYear: `${month.toString().padStart(2, '0')}/${year}`
                 });
                 
                 currentDate.setDate(currentDate.getDate() + 1);
             }
             
-            console.log('Dados de exemplo gerados:', data.length, 'registros');
+            console.log('Dados gerados:', data.length, 'registros');
             return data;
         }
         
@@ -814,26 +832,101 @@
                 } catch (error) {
                     console.error('Erro ao processar arquivo:', error);
                     showError('Erro ao processar arquivo: ' + error.message);
-                    loadDataFromGoogleSheets();
+                    loadData();
                 }
             };
             
             reader.onerror = function() {
                 showError('Erro ao ler o arquivo');
-                loadDataFromGoogleSheets();
+                loadData();
             };
             
             if (file.name.endsWith('.csv')) {
                 reader.readAsText(file);
             } else {
                 showError('Formato de arquivo não suportado. Use CSV.');
-                loadDataFromGoogleSheets();
+                loadData();
             }
         }
         
         function processFileData(content, fileName) {
-            // Reutiliza a mesma lógica do Google Sheets
-            return processGoogleSheetsData(content);
+            const weekdays = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+            const processedData = [];
+            
+            if (fileName.endsWith('.csv')) {
+                const lines = content.split('\n').filter(line => line.trim() !== '');
+                
+                for (let i = 1; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
+                    
+                    const values = parseCSVLine(line);
+                    let date;
+                    
+                    try {
+                        const dateStr = values[0].replace(/"/g, '').trim();
+                        
+                        if (dateStr.includes('/')) {
+                            const parts = dateStr.split('/');
+                            if (parts.length === 3) {
+                                if (parts[2].length === 4) {
+                                    date = new Date(parts[2], parts[1] - 1, parts[0]);
+                                } else if (parts[0].length === 4) {
+                                    date = new Date(parts[0], parts[1] - 1, parts[2]);
+                                }
+                            }
+                        } else if (dateStr.includes('-')) {
+                            date = new Date(dateStr);
+                        }
+                    } catch (e) {
+                        continue;
+                    }
+                    
+                    if (!date || isNaN(date.getTime())) continue;
+                    
+                    const volume = parseFloat(values[1].replace(/"/g, '')) || 0;
+                    if (volume <= 0) continue;
+                    
+                    const month = date.getMonth() + 1;
+                    const year = date.getFullYear();
+                    const dayOfWeek = date.getDay();
+                    
+                    processedData.push({
+                        date: date,
+                        volume: volume,
+                        days: parseInt(values[2]) || 1,
+                        weekday: weekdays[dayOfWeek],
+                        dayOfWeek: dayOfWeek,
+                        month: month,
+                        year: year,
+                        monthYear: `${month.toString().padStart(2, '0')}/${year}`
+                    });
+                }
+            }
+            
+            return processedData;
+        }
+        
+        function parseCSVLine(line) {
+            const result = [];
+            let current = '';
+            let inQuotes = false;
+            
+            for (let i = 0; i < line.length; i++) {
+                const char = line[i];
+                
+                if (char === '"') {
+                    inQuotes = !inQuotes;
+                } else if (char === ',' && !inQuotes) {
+                    result.push(current);
+                    current = '';
+                } else {
+                    current += char;
+                }
+            }
+            
+            result.push(current);
+            return result;
         }
         
         function updateConnectionStatus(connected, message) {
@@ -843,14 +936,6 @@
                 connectionStatus.className = 'status-indicator status-disconnected';
             }
             connectionInfo.textContent = message;
-        }
-        
-        function showLoading() {
-            loadingElement.style.display = 'block';
-        }
-        
-        function hideLoading() {
-            loadingElement.style.display = 'none';
         }
         
         function populateYearFilter() {
@@ -926,6 +1011,29 @@
                 monthlyAverages[month] = monthlyStats[month].total / monthlyStats[month].count;
             });
             
+            // Análise comparativa mensal por ano
+            const monthlyByYear = {};
+            data.forEach(item => {
+                const year = item.year;
+                const month = item.month;
+                const key = `${year}-${month}`;
+                
+                if (!monthlyByYear[key]) {
+                    monthlyByYear[key] = { total: 0, count: 0 };
+                }
+                monthlyByYear[key].total += item.volume;
+                monthlyByYear[key].count++;
+            });
+            
+            const monthlyAveragesByYear = {};
+            Object.keys(monthlyByYear).forEach(key => {
+                const [year, month] = key.split('-');
+                if (!monthlyAveragesByYear[year]) {
+                    monthlyAveragesByYear[year] = {};
+                }
+                monthlyAveragesByYear[year][month] = monthlyByYear[key].total / monthlyByYear[key].count;
+            });
+            
             let maxWeekdayVolume = 0;
             let maxWeekday = null;
             Object.keys(weekdayAverages).forEach(weekday => {
@@ -984,6 +1092,10 @@
                 });
             }
             
+            // Análise de tendências e riscos
+            const trendAnalysis = performTrendAnalysis(sortedData);
+            const riskAnalysis = performRiskAnalysis(sortedData, dailyVariations);
+            
             return {
                 totalVolume,
                 averageDaily,
@@ -991,11 +1103,194 @@
                 maxMonth: { month: maxMonth, volume: maxMonthlyVolume },
                 weekdayAverages,
                 monthlyAverages,
+                monthlyAveragesByYear,
                 increaseByWeekday,
                 maxIncreaseWeekday: { day: maxIncreaseWeekday, frequency: maxIncreaseFrequency },
                 rawData: sortedData,
-                dailyVariations: dailyVariations
+                dailyVariations: dailyVariations,
+                trendAnalysis: trendAnalysis,
+                riskAnalysis: riskAnalysis
             };
+        }
+        
+        function performTrendAnalysis(data) {
+            if (data.length < 30) return { trends: [], seasonalPatterns: [] };
+            
+            const trends = [];
+            const seasonalPatterns = [];
+            
+            // Análise de tendência geral
+            const firstMonthAvg = data.filter(d => 
+                new Date(d.date).getMonth() === 0
+            ).reduce((sum, d) => sum + d.volume, 0) / data.filter(d => 
+                new Date(d.date).getMonth() === 0
+            ).length;
+            
+            const lastMonthAvg = data.filter(d => 
+                new Date(d.date).getMonth() === 11
+            ).reduce((sum, d) => sum + d.volume, 0) / data.filter(d => 
+                new Date(d.date).getMonth() === 11
+            ).length;
+            
+            const growthRate = ((lastMonthAvg - firstMonthAvg) / firstMonthAvg) * 100;
+            
+            if (growthRate > 5) {
+                trends.push({
+                    type: 'positive',
+                    message: `Tendência de crescimento detectada: ${growthRate.toFixed(1)}% de aumento ao longo do período`
+                });
+            } else if (growthRate < -5) {
+                trends.push({
+                    type: 'negative',
+                    message: `Tendência de declínio detectada: ${Math.abs(growthRate).toFixed(1)}% de redução ao longo do período`
+                });
+            } else {
+                trends.push({
+                    type: 'neutral',
+                    message: `Estabilidade geral: variação de ${growthRate.toFixed(1)}% ao longo do período`
+                });
+            }
+            
+            // Análise de sazonalidade
+            const monthlyAverages = {};
+            data.forEach(item => {
+                const month = new Date(item.date).getMonth();
+                if (!monthlyAverages[month]) {
+                    monthlyAverages[month] = { total: 0, count: 0 };
+                }
+                monthlyAverages[month].total += item.volume;
+                monthlyAverages[month].count++;
+            });
+            
+            const monthlyAvgValues = Object.keys(monthlyAverages).map(month => 
+                monthlyAverages[month].total / monthlyAverages[month].count
+            );
+            
+            const maxMonth = Math.max(...monthlyAvgValues);
+            const minMonth = Math.min(...monthlyAvgValues);
+            const seasonalityIndex = (maxMonth - minMonth) / (monthlyAvgValues.reduce((a, b) => a + b, 0) / monthlyAvgValues.length);
+            
+            if (seasonalityIndex > 0.2) {
+                seasonalPatterns.push({
+                    type: 'high',
+                    message: `Alta sazonalidade detectada: variação de ${(seasonalityIndex * 100).toFixed(1)}% entre meses`
+                });
+            } else {
+                seasonalPatterns.push({
+                    type: 'low',
+                    message: `Baixa sazonalidade: variação de ${(seasonalityIndex * 100).toFixed(1)}% entre meses`
+                });
+            }
+            
+            // Identificar meses com melhor e pior desempenho
+            let bestMonth = 0;
+            let worstMonth = 0;
+            let bestAvg = 0;
+            let worstAvg = Infinity;
+            
+            Object.keys(monthlyAverages).forEach(month => {
+                const avg = monthlyAverages[month].total / monthlyAverages[month].count;
+                if (avg > bestAvg) {
+                    bestAvg = avg;
+                    bestMonth = parseInt(month);
+                }
+                if (avg < worstAvg) {
+                    worstAvg = avg;
+                    worstMonth = parseInt(month);
+                }
+            });
+            
+            const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 
+                               'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+            
+            trends.push({
+                type: 'positive',
+                message: `Melhor mês: ${monthNames[bestMonth]} com média de ${bestAvg.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`
+            });
+            
+            trends.push({
+                type: 'negative',
+                message: `Pior mês: ${monthNames[worstMonth]} com média de ${worstAvg.toLocaleString('pt-BR', {maximumFractionDigits: 0})}`
+            });
+            
+            return { trends, seasonalPatterns };
+        }
+        
+        function performRiskAnalysis(data, variations) {
+            const risks = [];
+            
+            // Análise de volatilidade
+            const variationValues = variations.map(v => Math.abs(v.variationPercent));
+            const avgVariation = variationValues.reduce((a, b) => a + b, 0) / variationValues.length;
+            
+            if (avgVariation > 15) {
+                risks.push({
+                    severity: 'high',
+                    message: `Alta volatilidade: variação média diária de ${avgVariation.toFixed(1)}%`
+                });
+            } else if (avgVariation > 8) {
+                risks.push({
+                    severity: 'medium',
+                    message: `Volatilidade moderada: variação média diária de ${avgVariation.toFixed(1)}%`
+                });
+            }
+            
+            // Análise de quedas significativas
+            const significantDrops = variations.filter(v => v.variationPercent < -20).length;
+            if (significantDrops > 5) {
+                risks.push({
+                    severity: 'high',
+                    message: `Múltiplas quedas significativas: ${significantDrops} dias com redução superior a 20%`
+                });
+            }
+            
+            // Análise de padrões de fim de semana
+            const weekendData = data.filter(d => d.dayOfWeek === 0 || d.dayOfWeek === 6);
+            const weekdayData = data.filter(d => d.dayOfWeek !== 0 && d.dayOfWeek !== 6);
+            
+            const weekendAvg = weekendData.reduce((sum, d) => sum + d.volume, 0) / weekendData.length;
+            const weekdayAvg = weekdayData.reduce((sum, d) => sum + d.volume, 0) / weekdayData.length;
+            
+            const weekendRatio = weekendAvg / weekdayAvg;
+            
+            if (weekendRatio < 0.5) {
+                risks.push({
+                    severity: 'medium',
+                    message: `Baixa performance nos fins de semana: apenas ${(weekendRatio * 100).toFixed(1)}% da média dos dias úteis`
+                });
+            }
+            
+            // Análise de outliers
+            const volumes = data.map(d => d.volume);
+            const Q1 = quantile(volumes, 0.25);
+            const Q3 = quantile(volumes, 0.75);
+            const IQR = Q3 - Q1;
+            const lowerBound = Q1 - 1.5 * IQR;
+            const upperBound = Q3 + 1.5 * IQR;
+            
+            const outliers = volumes.filter(v => v < lowerBound || v > upperBound);
+            
+            if (outliers.length > 0) {
+                risks.push({
+                    severity: 'medium',
+                    message: `${outliers.length} valores atípicos detectados que podem distorcer análises`
+                });
+            }
+            
+            return risks;
+        }
+        
+        function quantile(arr, q) {
+            const sorted = [...arr].sort((a, b) => a - b);
+            const pos = (sorted.length - 1) * q;
+            const base = Math.floor(pos);
+            const rest = pos - base;
+            
+            if (sorted[base + 1] !== undefined) {
+                return sorted[base] + rest * (sorted[base + 1] - sorted[base]);
+            } else {
+                return sorted[base];
+            }
         }
         
         function displayStats(analysis) {
@@ -1127,7 +1422,53 @@
                 }
             });
 
-            // Gráfico de Variação Diária
+            // NOVO GRÁFICO: Comparativo Mensal entre Anos
+            const comparisonCtx = document.getElementById('monthly-comparison-chart').getContext('2d');
+            const years = Object.keys(analysis.monthlyAveragesByYear).sort();
+            const monthNames = ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'];
+            
+            const datasets = years.map((year, index) => {
+                const colors = ['#4361ee', '#4cc9f0', '#f72585', '#7209b7', '#3a0ca3'];
+                const data = [];
+                
+                for (let month = 1; month <= 12; month++) {
+                    data.push(analysis.monthlyAveragesByYear[year][month] || 0);
+                }
+                
+                return {
+                    label: year,
+                    data: data,
+                    borderColor: colors[index % colors.length],
+                    backgroundColor: colors[index % colors.length] + '20',
+                    borderWidth: 2,
+                    tension: 0.3,
+                    fill: false
+                };
+            });
+            
+            charts.comparison = new Chart(comparisonCtx, {
+                type: 'line',
+                data: {
+                    labels: monthNames,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Comparativo de Volume Mensal por Ano'
+                        }
+                    },
+                    scales: {
+                        x: { title: { display: true, text: 'Mês' } },
+                        y: { beginAtZero: true, title: { display: true, text: 'Volume Médio' } }
+                    }
+                }
+            });
+
+            // Gráfico: Variação Diária
             const variationCtx = document.getElementById('daily-variation-chart').getContext('2d');
             const variationDates = analysis.dailyVariations.map(item => moment(item.date).format('DD/MM'));
             const variationData = analysis.dailyVariations.map(item => item.variation);
@@ -1135,6 +1476,7 @@
                 item.variation > 0 ? '#28a745' : '#dc3545'
             );
 
+            // Simplificar dados para não sobrecarregar
             const variationStep = Math.max(1, Math.floor(variationDates.length / 20));
             const displayVariationDates = variationDates.filter((_, index) => index % variationStep === 0);
             const displayVariationData = variationData.filter((_, index) => index % variationStep === 0);
@@ -1189,6 +1531,8 @@
             const weekdayNames = ['Domingo', 'Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira', 'Sábado'];
             const summaryElement = document.getElementById('trend-summary');
             const recommendationsElement = document.getElementById('recommendations');
+            const trendItemsElement = document.getElementById('trend-items');
+            const riskItemsElement = document.getElementById('risk-items');
             
             // Análise de variações
             const positiveVariations = analysis.dailyVariations.filter(v => v.variation > 0).length;
@@ -1218,6 +1562,59 @@
             
             summaryElement.innerHTML = summaryHTML;
             
+            // Exibir análise de tendências
+            let trendHTML = '';
+            analysis.trendAnalysis.trends.forEach(trend => {
+                const iconClass = trend.type === 'positive' ? 'fa-arrow-up' : 
+                                trend.type === 'negative' ? 'fa-arrow-down' : 'fa-minus';
+                
+                trendHTML += `
+                    <div class="trend-item">
+                        <div class="trend-indicator ${trend.type}">
+                            <i class="fas ${iconClass}"></i>
+                        </div>
+                        <div>${trend.message}</div>
+                    </div>
+                `;
+            });
+            
+            analysis.trendAnalysis.seasonalPatterns.forEach(pattern => {
+                const iconClass = pattern.type === 'high' ? 'fa-chart-line' : 'fa-chart-bar';
+                
+                trendHTML += `
+                    <div class="trend-item">
+                        <div class="trend-indicator ${pattern.type === 'high' ? 'positive' : 'neutral'}">
+                            <i class="fas ${iconClass}"></i>
+                        </div>
+                        <div>${pattern.message}</div>
+                    </div>
+                `;
+            });
+            
+            trendItemsElement.innerHTML = trendHTML || '<p>Não há dados suficientes para análise de tendências</p>';
+            
+            // Exibir análise de riscos
+            let riskHTML = '';
+            if (analysis.riskAnalysis.length > 0) {
+                analysis.riskAnalysis.forEach(risk => {
+                    const iconClass = risk.severity === 'high' ? 'fa-exclamation-triangle' : 'fa-exclamation-circle';
+                    
+                    riskHTML += `
+                        <div class="risk-item">
+                            <div class="risk-icon">
+                                <i class="fas ${iconClass}"></i>
+                            </div>
+                            <div>${risk.message}</div>
+                        </div>
+                    `;
+                });
+            } else {
+                riskHTML = '<p>Nenhum risco significativo identificado nos dados atuais</p>';
+            }
+            
+            riskItemsElement.innerHTML = riskHTML;
+            
+            // Recomendações
             let recommendationsHTML = '';
             if (analysis.maxWeekday.day !== null) {
                 recommendationsHTML += `<p><i class="fas fa-check-circle"></i> Focar recursos nas ${weekdayNames[analysis.maxWeekday.day].toLowerCase()}s</p>`;
@@ -1231,6 +1628,15 @@
 
             if (maxIncrease.variation > 500) {
                 recommendationsHTML += `<p><i class="fas fa-chart-line"></i> Picos significativos detectados - otimizar para esses períodos</p>`;
+            }
+            
+            // Recomendações baseadas na análise de riscos
+            if (analysis.riskAnalysis.some(r => r.severity === 'high' && r.message.includes('volatilidade'))) {
+                recommendationsHTML += `<p><i class="fas fa-shield-alt"></i> Alta volatilidade detectada - considerar estratégias de mitigação de risco</p>`;
+            }
+            
+            if (analysis.riskAnalysis.some(r => r.message.includes('fins de semana'))) {
+                recommendationsHTML += `<p><i class="fas fa-calendar-week"></i> Baixa performance nos fins de semana - avaliar estratégias específicas</p>`;
             }
             
             recommendationsElement.innerHTML = recommendationsHTML || '<p>Analise os gráficos para mais insights</p>';
